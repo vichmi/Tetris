@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        canvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -400px;
+            margin-top: -300px;
+        }
+    </style>
+</head>
+
+<body onload="_setup();">
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <script>
+        let isFullscreen = false;
+        let stroke_ = false, c = 'black', noLoop_ = false;
+
+        function disctance(x1, y1, x2, y2) {
+            let x = x1 - x2;
+            let y = y1 - y2;
+            return Math.sqrt( x*x + y*y );
+        }
+
+        function areColliding(x1, y1, w1, h1, x2, y2, w2, h2) {
+            if(x2 <= x1+w1 && x1 <= x2+w2 && y2 <= y1+h1 && y1 <= y2+h2) {
+                return 1;
+            }
+            return 0;
+        }
+
+        function areCircleColliding(x1, y1, r1, x2, y2, r2) {
+            if(disctance(x1, y1, x2, y2) < r1+r2) {
+                return 1;
+            }
+            return 0;
+        }
+
+        function random(min, max) {
+            if(typeof min === 'undefined' && typeof max === 'undefined') {
+                return Math.random();
+            }
+            if(typeof max === 'undefined') {
+                return Math.random()*min;
+            }else{
+                return min+Math.random()*(max-min);
+            }
+        }
+
+        function line(x1, y1, x2, y2) {
+            context.beginPath();
+            context.moveTo(x1, y1);
+            context.lineTo(x2, y2);
+            context.stroke();
+        }
+
+        function setCanvasSize(w, h) {
+            canvas.width = w;
+            canvas.height = h;
+        }
+
+        function setFullScreen() {
+            isFullscreen = true;
+            setCanvasSize(innerWidth, innerHeight);
+        }
+
+        function line(x1, y1, x2, y2) {
+            context.beginPath();
+            context.moveTo(x1, y1);
+            context.lineTo(x2, y2);
+            context.stroke();
+        }
+
+        function stroke(c) {
+            if(c !== undefined) {
+                context.strokeStyle = c;
+            }
+            stroke_ = true;
+        }
+
+        function fill(c) {
+            if(c !== undefined) {
+                context.fillStyle = c;
+            }
+            stroke_ = false;
+        }
+
+        function rect(x, y, w, h) {
+            if(stroke_) {
+                context.strokeRect(x, y, w, h);
+            }else{
+                context.fillRect(x, y, w, h);
+            }
+        }
+
+        function noLoop() {
+            noLoop_ = true;
+        }
+
+        function translate(x, y) {context.translate(x, y);}
+
+        function rotate(a) {context.rotate(a);}
+
+        function save() {context.save();}
+
+        function restore() {context.restore();}
+
+        function scale(x, y) {context.scale(x, y);}
+
+        onresize = () => {if(isFullscreen) setFullScreen();}
+
+    </script>
+    
+    <script src="tetrominos.js"></script>
+    <script src="figure.js"></script>
+    <script src="game.js"></script>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        let mouseX = mouseY = 0;
+
+        let callupdates = 10;
+        const reqAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
+				setTimeout(callback, 1000 / 30);
+		};
+
+        function _draw() {
+            if(typeof draw === 'function') {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                draw();
+            }
+            if(noLoop_ == false) reqAnimationFrame(_draw);
+        }
+
+        function _update() {
+            if (typeof update === 'function') {
+                update();
+            }
+        }
+ 
+
+        let isKeyPressed = [];
+		for (i = 0; i < 256; ++i) {
+			isKeyPressed.push(0);
+		}
+
+        // Mouse events
+        window.addEventListener('mouseup', (e) => {
+            if(typeof mouseup === 'function') {
+                mouseX = e.x;
+                mouseY = e.y;
+                mouseup();
+            }
+        });
+
+        window.addEventListener('mousedown', (e) => {
+            if(typeof mousedown === 'function') {
+                mouseX = e.x;
+                mouseY = e.y;
+                mousedown();
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if(typeof mousemove === 'function') {
+                mouseX = e.x;
+                mouseY = e.y;
+                mousemove();
+            }
+        });
+
+        // Keyboard Events
+        window.addEventListener('keyup', (e) => {
+            if(typeof keyup === 'function') {
+                keyup(e.key);
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if(typeof keydown === 'function') {
+                keydown(e.key);
+            }
+        });
+
+        window.addEventListener('keypress', (e) => {
+            if(typeof keypress === 'function') {
+                keypress(e.key);
+            }
+        });
+
+
+        // Startup functions
+        function _setup() {
+            reqAnimationFrame(_draw);
+            setInterval(_update, callupdates);
+
+            if(typeof setup === "function") {
+                setup();
+            }
+        }
+    </script>
+</body>
+
+</html>
